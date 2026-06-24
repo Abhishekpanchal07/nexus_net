@@ -24,6 +24,8 @@ enum NetworkErrorType {
 
   /// Internal server error.
   serverError,
+  ///  for api req cancel
+  cancelled,
 
   /// Unexpected or unclassified error.
   unknown,

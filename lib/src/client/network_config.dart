@@ -1,7 +1,7 @@
 import '../auth/token_manager.dart';
-
 import '../auth/auth_provider.dart';
 import '../typedefs/callbacks.dart';
+import '../typedefs/parsers.dart';
 
 class NetworkConfig {
   const NetworkConfig({
@@ -35,6 +35,8 @@ class NetworkConfig {
     this.onTokenRefreshStarted,
     this.onTokenRefreshSuccess,
     this.onTokenRefreshFailed,
+    this.refreshTokenParser,
+    this.refreshRequestBodyBuilder,
 
     // Headers
     this.defaultHeaders = const {},
@@ -50,8 +52,8 @@ class NetworkConfig {
   // Authentication
   // ==========================
 
- final AuthProvider? authProvider;
-final TokenManager? tokenManager;
+  final AuthProvider? authProvider;
+  final TokenManager? tokenManager;
 
   /// Example:
   /// /auth/refresh-token
@@ -113,10 +115,23 @@ final TokenManager? tokenManager;
 
   final bool enableConnectivityCheck;
 
+  /// Refresh endpoint.
+  ///
+  /// Builds request body for refresh API.
+  ///
+  /// Default:
+  /// {
+  ///   "refresh_token": refreshToken,
+  /// }
+  final RefreshRequestBodyBuilder? refreshRequestBodyBuilder;
+
+  /// Parses refresh API response into TokenPair.
+  final RefreshTokenParser? refreshTokenParser;
 
   bool get isTokenRefreshEnabled {
-  return tokenManager != null &&
-      refreshEndpoint != null &&
-      (refreshEndpoint?.isNotEmpty ?? false);
-}
+    return tokenManager != null &&
+        refreshEndpoint != null &&
+        (refreshEndpoint?.isNotEmpty ?? false) &&
+        refreshTokenParser != null;
+  }
 }

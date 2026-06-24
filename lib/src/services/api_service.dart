@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
-
+import 'package:nexus_net/src/services/base_service.dart';
 import '../client/nexus_client.dart';
 import '../enums/http_method.dart';
-import '../enums/network_error_type.dart';
-import '../exceptions/network_exception.dart';
 import '../models/api_response.dart';
 import '../models/network_request_options.dart';
 import '../utils/network_constants.dart';
@@ -22,7 +20,7 @@ import '../utils/network_constants.dart';
 /// - UI handling
 /// - State management
 /// - Business logic
-class ApiService {
+class ApiService extends BaseService {
   const ApiService();
 
   /// Executes a GET request.
@@ -111,38 +109,44 @@ class ApiService {
     Map<String, dynamic>? queryParameters,
     NetworkRequestOptions? options,
   }) async {
+    final requestOptions = options ?? const NetworkRequestOptions();
+
+    final cancelToken = createCancelToken(requestOptions);
     try {
-      final requestOptions = options ?? const NetworkRequestOptions();
+      await checkConnectivity();
 
       final response = await NexusClient.dio.request(
         endpoint,
         data: body,
         queryParameters: queryParameters,
-        cancelToken: requestOptions.cancelToken,
+        cancelToken: cancelToken,
         options: Options(
           method: _resolveHttpMethod(method),
 
           headers: requestOptions.additionalHeaders,
 
-          extra: {NetworkConstants.authRequired: requestOptions.requiresAuth,NetworkConstants.retryCount: 0,
+          extra: {
+            NetworkConstants.authRequired: requestOptions.requiresAuth,
+            NetworkConstants.retryCount: 0,
 
-  NetworkConstants.retryOnFailure:
-      requestOptions.retryOnFailure,},
+            NetworkConstants.retryOnFailure: requestOptions.retryOnFailure,
+          },
 
           sendTimeout: requestOptions.sendTimeout,
           receiveTimeout: requestOptions.receiveTimeout,
         ),
       );
 
-      return ApiResponse(
-        data: response.data,
-        statusCode: response.statusCode ?? 200,
-        headers: Map<String, List<String>>.from(response.headers.map),
-      );
+      return mapResponse(response);
     } on DioException catch (error, stackTrace) {
       NexusClient.config.onError?.call(error, stackTrace);
 
-      throw _mapDioException(error);
+      throwMappedException(error);
+    } finally {
+      disposeCancelToken(
+  cancelToken,
+  requestOptions,
+);
     }
   }
 
@@ -165,52 +169,5 @@ class ApiService {
       case HttpMethod.delete:
         return 'DELETE';
     }
-  }
-
-  /// Converts Dio exceptions into
-  /// package-specific NetworkException instances.
-  NetworkException _mapDioException(DioException error) {
-    switch (error.type) {
-      case DioExceptionType.connectionTimeout:
-        return NetworkException.connectionTimeout();
-
-      case DioExceptionType.receiveTimeout:
-      case DioExceptionType.sendTimeout:
-        return NetworkException.timeout();
-
-      case DioExceptionType.connectionError:
-        return NetworkException.noInternet();
-
-      case DioExceptionType.cancel:
-        return NetworkException(
-          message: 'Request was cancelled',
-          type: NetworkErrorType.unknown,
-        );
-
-      case DioExceptionType.badResponse:
-        return NetworkException.fromStatusCode(
-          statusCode: error.response?.statusCode ?? 500,
-          message: _extractMessage(error.response?.data),
-        );
-
-      default:
-        return NetworkException.serverError(
-          message: error.message ?? 'An unexpected error occurred.',
-        );
-    }
-  }
-
-  /// Attempts to extract a meaningful error
-  /// message from the server response.
-  String _extractMessage(dynamic data) {
-    if (data is Map<String, dynamic>) {
-      final message = data['message'] ?? data['error'] ?? data['detail'];
-
-      if (message is String && message.trim().isNotEmpty) {
-        return message;
-      }
-    }
-
-    return 'Something went wrong';
   }
 }

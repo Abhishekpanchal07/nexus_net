@@ -8,5 +8,6 @@ class NetworkConstants {
   static const String bearer = 'Bearer';
   static const String retryCount = 'retryCount';
   static const String retryOnFailure = 'retryOnFailure';
+  static const skipRefreshToken = 'skipRefreshToken';
    
 }

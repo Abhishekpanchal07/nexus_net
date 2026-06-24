@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+
 
 /// Per-request configuration options.
 ///
@@ -18,7 +18,7 @@ class NetworkRequestOptions {
   const NetworkRequestOptions({
     this.requiresAuth = true,
     this.retryOnFailure = true,
-    this.cancelToken,
+   
     this.tag,
     this.additionalHeaders,
     this.connectTimeout,
@@ -43,11 +43,7 @@ class NetworkRequestOptions {
   /// Defaults to `true`.
   final bool retryOnFailure;
 
-  /// Optional Dio cancel token.
-  ///
-  /// Allows manual cancellation of requests.
-  final CancelToken? cancelToken;
-
+ 
   /// Optional request tag.
   ///
   /// Can be used later for grouped request cancellation.

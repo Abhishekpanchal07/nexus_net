@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-
 import '../client/nexus_client.dart';
 import '../models/download_progress.dart';
 import '../models/network_request_options.dart';
@@ -11,7 +10,7 @@ import 'base_service.dart';
 class DownloadService extends BaseService {
   const DownloadService();
 
-  /// Downloads a file from [url] and saves it to [savePath].
+  /// Downloads a file from [url] and saves it to [savePath]
   Future<void> download({
     required String url,
     required String savePath,

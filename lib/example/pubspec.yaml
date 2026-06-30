@@ -1,0 +1,19 @@
+name: nexus_net_example
+description: Example application for NexusNet.
+publish_to: "none"
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  nexus_net:
+    path: ../../
+
+  file_picker: ^10.3.2
+  path_provider: ^2.1.5
+
+flutter:
+  uses-material-design: true
